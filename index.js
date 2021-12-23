@@ -35,7 +35,17 @@ async function run() {
         })
 
 
-        //Blood DELETE Api
+        //Recipe Single 
+        app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const user = await recipePostReqCollection.findOne(query);
+            // console.log('load user with id: ', id);
+            res.send(user);
+        })
+
+
+        //Recipe DELETE Api
         app.delete('/recipePostReq/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
