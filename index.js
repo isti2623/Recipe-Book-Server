@@ -10,8 +10,8 @@ const fileUpload = require('express-fileupload');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json());
-app.use(fileUpload());
+app.use(express.json({ limit: '50mb' }));
+app.use(fileUpload({ limit: '50mb' }));
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.sovrt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -24,7 +24,43 @@ async function run() {
         await client.connect();
         const database = client.db('recipe-book');
         const recipePostReqCollection = database.collection('recipePostReq');
+        const MyFavourites = database.collection('favourites');
 
+
+
+        // GET favourites
+        app.get('/favourites', async (req, res) => {
+            const cursor = MyFavourites.find({});
+            const favourites = await cursor.toArray();
+            res.send(favourites);
+        });
+
+        // GET all favourite by email
+        app.get("/myFavourites/:email", (req, res) => {
+            console.log(req.params);
+            MyFavourites
+                .find({ email: req.params.email })
+                .toArray((err, results) => {
+                    res.send(results);
+                });
+        });
+
+        //DELETE my favourite
+        app.delete('/myFavourites/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await MyFavourites.deleteOne(query);
+            res.json(result);
+        })
+
+        // POST favourites
+        app.post('/favourites', async (req, res) => {
+            const favourite = req.body;
+            console.log('hit the post api', favourite);
+            const result = await MyFavourites.insertOne(favourite);
+            console.log(result);
+            res.json(result)
+        });
 
 
         //Recipe Get Api
