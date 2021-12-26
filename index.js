@@ -35,6 +35,17 @@ async function run() {
             res.send(favourites);
         });
 
+        // single favourite
+        app.get('/favourite/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const favourite = await MyFavourites.findOne(query);
+            // console.log('load user with id: ', id);
+            res.send(favourite);
+        })
+
+
+
         // GET all favourite by email
         app.get("/myFavourites/:email", (req, res) => {
             console.log(req.params);
