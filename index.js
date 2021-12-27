@@ -133,36 +133,39 @@ async function run() {
             res.json(result);
 
 
-            //Recipe POST Api
-            app.post('/recipePostReq', async (req, res) => {
-                const recipeName = req.body.recipeName;
-
-                const cuisine = req.body.cuisine;
-                const category = req.body.category;
-                const author = req.body.author;
-                const ingredients = req.body.ingredients;
-                const method = req.body.method;
-
-                const pic = req.files.image;
-                const picData = pic.data;
-                const encodedPic = picData.toString('base64');
-                const imageBuffer = Buffer.from(encodedPic, 'base64');
-                const food = {
-                    recipeName,
-                    cuisine,
-                    category,
-                    author,
-                    ingredients,
-                    method,
-                    image: imageBuffer
-                }
+        });
 
 
-                const result = await recipePostReqCollection.insertOne(food);
-                console.log('post', req.body.recipeName);
-                res.json(result);
-                console.log('recipi hit', result);
-            });
+        //Recipe POST Api
+
+        app.post('/recipePostReq', async (req, res) => {
+            const recipeName = req.body.recipeName;
+
+            const cuisine = req.body.cuisine;
+            const category = req.body.category;
+            const author = req.body.author;
+            const ingredients = req.body.ingredients;
+            const method = req.body.method;
+
+            const pic = req.files.image;
+            const picData = pic.data;
+            const encodedPic = picData.toString('base64');
+            const imageBuffer = Buffer.from(encodedPic, 'base64');
+            const food = {
+                recipeName,
+                cuisine,
+                category,
+                author,
+                ingredients,
+                method,
+                image: imageBuffer
+            }
+
+
+            const result = await recipePostReqCollection.insertOne(food);
+            console.log('post', req.body.recipeName);
+            res.json(result);
+            console.log('recipi hit');
         });
 
     }
