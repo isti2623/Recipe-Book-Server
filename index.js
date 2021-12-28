@@ -25,6 +25,7 @@ async function run() {
         const database = client.db('recipe-book');
         const recipePostReqCollection = database.collection('recipePostReq');
         const MyFavourites = database.collection('favourites');
+        const usersCollection = database.collection('userInfo');
 
 
 
@@ -91,6 +92,15 @@ async function run() {
             res.send(user);
         })
 
+        //Recipe Get Api email search
+        app.get('/recipePostReqDashboard', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const cursor = recipePostReqCollection.find(query);
+            const recipePostReq = await cursor.toArray();
+            res.send(recipePostReq);
+        })
+
 
         //Recipe DELETE Api
         app.delete('/recipePostReq/:id', async (req, res) => {
@@ -139,19 +149,21 @@ async function run() {
         //Recipe POST Api
 
         app.post('/recipePostReq', async (req, res) => {
+            const name = req.body.name;
+            const email = req.body.email;
             const recipeName = req.body.recipeName;
-
             const cuisine = req.body.cuisine;
             const category = req.body.category;
             const author = req.body.author;
             const ingredients = req.body.ingredients;
             const method = req.body.method;
-
             const pic = req.files.image;
             const picData = pic.data;
             const encodedPic = picData.toString('base64');
             const imageBuffer = Buffer.from(encodedPic, 'base64');
             const food = {
+                name,
+                email,
                 recipeName,
                 cuisine,
                 category,
@@ -160,13 +172,41 @@ async function run() {
                 method,
                 image: imageBuffer
             }
-
-
             const result = await recipePostReqCollection.insertOne(food);
             console.log('post', req.body.recipeName);
             res.json(result);
             console.log('recipi hit');
         });
+
+        //find user admin by email
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
+        })
+
+        //User Sign up POST Api
+        app.post('/userInfo', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.json(result);
+        })
+
+
+        //Users  Make Admin
+        app.put('/userInfo/admin', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email }
+            const updateDoc = { $set: { role: 'admin' } };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        })
+
 
     }
     finally {
